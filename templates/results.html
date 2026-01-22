@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rankings - ExoHabitatAI</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .rank-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: 2px solid var(--current-border);
+            font-weight: 700;
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+        }
+        
+        .rank-badge.gold {
+            background: linear-gradient(135deg, #ffd60a 0%, #ff9500 100%);
+            border: none;
+            color: #000;
+            box-shadow: 0 0 30px rgba(255,214,10,0.6);
+            animation: goldPulse 2s ease-in-out infinite;
+        }
+        
+        .rank-badge.silver {
+            background: linear-gradient(135deg, #c0c0c0 0%, #a8a8a8 100%);
+            border: none;
+            color: #000;
+            box-shadow: 0 0 20px rgba(192,192,192,0.5);
+        }
+        
+        .rank-badge.bronze {
+            background: linear-gradient(135deg, #cd7f32 0%, #a0522d 100%);
+            border: none;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(205,127,50,0.5);
+        }
+        
+        @keyframes goldPulse {
+            0%, 100% { box-shadow: 0 0 30px rgba(255,214,10,0.6); }
+            50% { box-shadow: 0 0 50px rgba(255,214,10,0.9), 0 0 70px rgba(255,150,0,0.5); }
+        }
+        
+        .score-bar-container {
+            position: relative;
+            height: 30px;
+            background: rgba(0,29,61,0.6);
+            border-radius: 15px;
+            overflow: hidden;
+            min-width: 120px;
+            border: 1px solid var(--current-border);
+        }
+        
+        .score-bar-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-cyan) 0%, var(--accent-purple) 100%);
+            border-radius: 15px;
+            transition: width 0.5s ease-out;
+            box-shadow: 0 0 15px rgba(0,245,255,0.5);
+        }
+        
+        .score-bar-text {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            font-weight: 600;
+            font-size: 0.85rem;
+            font-family: 'Inter', sans-serif;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        
+        .planet-name {
+            font-weight: 600;
+            color: var(--current-text);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .planet-name .star-icon {
+            color: var(--accent-gold);
+            animation: starTwinkle 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes starTwinkle {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+        
+        .badge-habit {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .badge-high {
+            background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+            color: #000;
+            box-shadow: 0 0 20px rgba(0,255,136,0.4);
+        }
+        
+        .badge-medium {
+            background: linear-gradient(135deg, #9d4edd 0%, #7b2cbf 100%);
+            color: #fff;
+            box-shadow: 0 0 20px rgba(157,78,221,0.4);
+        }
+        
+        .badge-low {
+            background: linear-gradient(135deg, #00f5ff 0%, #00b4d8 100%);
+            color: #000;
+            box-shadow: 0 0 20px rgba(0,245,255,0.4);
+        }
+        
+        .badge-none {
+            background: linear-gradient(135deg, #ff6b35 0%, #ff3333 100%);
+            color: #fff;
+            box-shadow: 0 0 20px rgba(255,107,53,0.4);
+        }
+        
+        /* Star Type Badges */
+        .star-type-badge {
+            display: inline-block;
+            padding: 0.3rem 0.6rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .star-O { background: linear-gradient(135deg, #9bb0ff 0%, #6b8cff 100%); color: #000; }
+        .star-B { background: linear-gradient(135deg, #aabfff 0%, #87a3ff 100%); color: #000; }
+        .star-A { background: linear-gradient(135deg, #cad7ff 0%, #b0c4ff 100%); color: #000; }
+        .star-F { background: linear-gradient(135deg, #f8f7ff 0%, #e8e5ff 100%); color: #000; }
+        .star-G { background: linear-gradient(135deg, #fff4ea 0%, #ffd700 100%); color: #000; }
+        .star-K { background: linear-gradient(135deg, #ffd2a1 0%, #ffb366 100%); color: #000; }
+        .star-M { background: linear-gradient(135deg, #ffb56c 0%, #ff6b35 100%); color: #fff; }
+        
+        /* Table Styling */
+        .table {
+            color: var(--current-text);
+        }
+        
+        .table thead th {
+            background: rgba(0,29,61,0.8);
+            color: var(--accent-cyan);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: none;
+            letter-spacing: 0.3px;
+            border-bottom: 2px solid var(--current-border);
+            padding: 1rem 0.75rem;
+            white-space: nowrap;
+        }
+        
+        .table tbody tr {
+            transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(0,245,255,0.1);
+        }
+        
+        .table tbody tr:hover {
+            background: rgba(0,245,255,0.1);
+            transform: scale(1.01);
+        }
+        
+        .table tbody td {
+            padding: 0.875rem 0.75rem;
+            border: none;
+        }
+        
+        /* Detail Items */
+        .detail-item {
+            background: rgba(0,29,61,0.5);
+            padding: 0.75rem;
+            border-radius: 10px;
+            border: 1px solid var(--current-border);
+            font-size: 0.9rem;
+        }
+        
+        /* Ranking Row Animation */
+        .ranking-row {
+            animation: fadeInRow 0.5s ease-out;
+        }
+        
+        @keyframes fadeInRow {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Space Background -->
+    <div class="space-bg">
+        <div class="stars-layer stars-1"></div>
+        <div class="stars-layer stars-2"></div>
+        <div class="stars-layer stars-3"></div>
+        <div class="nebula nebula-1"></div>
+        <div class="nebula nebula-2"></div>
+        <div class="nebula nebula-3"></div>
+        <div class="shooting-star"></div>
+        <div class="shooting-star"></div>
+        <div class="shooting-star"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-globe-americas"></i> 
+                <span style="font-family: 'Orbitron', sans-serif;">ExoHabitatAI</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto me-3">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="fas fa-home"></i> Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/results"><i class="fas fa-trophy"></i> Rankings</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <section class="section-header" style="padding: 100px 0 60px;">
+        <div class="container position-relative" style="z-index: 1;">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <div class="hero-badge mb-3">
+                        <i class="fas fa-chart-bar"></i>
+                        Habitability Analysis Results
+                    </div>
+                    <h1 class="glow-text" style="font-family: 'Inter', sans-serif; font-size: 2.2rem; font-weight: 700; text-transform: none;">
+                        <i class="fas fa-globe me-2"></i> Exoplanet Habitability Rankings
+                    </h1>
+                    <p class="lead" style="color: var(--current-text-secondary);">Comprehensive assessment of exoplanet candidates based on predicted habitability indices</p>
+                </div>
+                <div class="col-lg-4 d-none d-lg-block text-center">
+                    <div style="background: linear-gradient(135deg, rgba(0,245,255,0.1) 0%, rgba(157,78,221,0.1) 100%); border-radius: 20px; padding: 20px; border: 1px solid var(--current-border);">
+                        <div style="font-family: 'Inter'; font-size: 2.5rem; color: var(--accent-cyan);">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <div style="color: var(--current-text-secondary); font-size: 0.9rem; font-weight: 500;">Ranked Candidates</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="data-grid" style="opacity: 0.2;"></div>
+    </section>
+
+    <!-- Rankings Section -->
+    <section class="py-5">
+        <div class="container">
+            <!-- Controls Panel -->
+            <div class="control-panel mb-4">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div class="control-panel-title mb-0">
+                        <i class="fas fa-cog"></i> Options
+                    </div>
+                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <div class="d-flex align-items-center gap-2">
+                            <label for="topN" class="mb-0" style="color: var(--current-text-secondary);">Show Top:</label>
+                            <select id="topN" class="form-select form-select-sm" style="width: 100px;">
+                                <option value="10">10</option>
+                                <option value="25">25</option>
+                                <option value="50" selected>50</option>
+                                <option value="100">100</option>
+                            </select>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-space btn-sm" id="btnExportPDF">
+                                <i class="fas fa-file-pdf"></i> PDF
+                            </button>
+                            <button class="btn btn-glow btn-sm" id="btnExportExcel">
+                                <i class="fas fa-file-excel"></i> Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rankings Card -->
+            <div class="card hologram">
+                <div class="card-header" style="font-family: 'Inter', sans-serif; font-weight: 600;">
+                    <i class="fas fa-table me-2"></i> Exoplanet Habitability Assessment
+                </div>
+                <div class="card-body">
+                    <!-- Loading -->
+                    <div id="loadingIndicator" class="text-center py-5">
+                        <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3" style="color: var(--accent-cyan); font-family: 'Inter', sans-serif; font-weight: 500;">
+                            <i class="fas fa-sync-alt me-2"></i>Processing data...
+                        </p>
+                    </div>
+                    
+                    <!-- Error -->
+                    <div id="errorMessage" class="alert alert-danger d-none"></div>
+                    
+                    <!-- Table -->
+                    <div class="table-responsive" id="tableContainer" style="display: none;">
+                        <table id="rankingsTable" class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th style="width: 70px; text-align: center;">Rank</th>
+                                    <th>Planet Name</th>
+                                    <th style="width: 180px;">Habitability Score</th>
+                                    <th style="width: 130px; text-align: center;">Classification</th>
+                                    <th style="text-align: center;">Radius (R⊕)</th>
+                                    <th style="text-align: center;">Mass (M⊕)</th>
+                                    <th style="text-align: center;">Temp (K)</th>
+                                    <th style="text-align: center;">Distance (AU)</th>
+                                    <th style="text-align: center;">Star Type</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rankingsTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Summary -->
+                    <div id="summaryInfo" class="mt-4 d-none">
+                        <div class="control-panel">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                                <div>
+                                    <i class="fas fa-database me-2" style="color: var(--accent-cyan);"></i>
+                                    Displaying <span id="showingCount" style="color: var(--accent-cyan); font-weight: 700;">0</span> of 
+                                    <span id="totalCount" style="color: var(--accent-purple); font-weight: 700;">0</span> exoplanets
+                                </div>
+                                <div class="d-flex gap-4">
+                                    <span><span class="badge badge-habit badge-high">High</span> Score ≥ 0.75</span>
+                                    <span><span class="badge badge-habit badge-medium">Medium</span> 0.50 - 0.74</span>
+                                    <span><span class="badge badge-habit badge-low">Low</span> 0.25 - 0.49</span>
+                                    <span><span class="badge badge-habit badge-none">Non-Hab</span> < 0.25</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container text-center">
+            <div class="mb-3">
+                <span style="font-family: 'Orbitron', sans-serif; font-size: 1.5rem;">
+                    <span class="glow-text">EXOHABITAT</span><span style="color: var(--accent-cyan);">AI</span>
+                </span>
+            </div>
+            <p class="text-muted small">&copy; 2026 ExoHabitatAI</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // DOM Elements
+        const topNSelect = document.getElementById('topN');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const errorMessage = document.getElementById('errorMessage');
+        const tableContainer = document.getElementById('tableContainer');
+        const tableBody = document.getElementById('rankingsTableBody');
+        const summaryInfo = document.getElementById('summaryInfo');
+        const showingCount = document.getElementById('showingCount');
+        const totalCount = document.getElementById('totalCount');
+        const btnExportPDF = document.getElementById('btnExportPDF');
+        const btnExportExcel = document.getElementById('btnExportExcel');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            
+            loadRankings(parseInt(topNSelect.value));
+            
+            topNSelect.addEventListener('change', function() {
+                loadRankings(parseInt(this.value));
+            });
+            
+            btnExportPDF.addEventListener('click', exportPDF);
+            btnExportExcel.addEventListener('click', exportExcel);
+        });
+
+        async function loadRankings(topN) {
+            loadingIndicator.style.display = 'block';
+            tableContainer.style.display = 'none';
+            errorMessage.classList.add('d-none');
+            summaryInfo.classList.add('d-none');
+
+            try {
+                const response = await fetch(`/api/rankings?top=${topN}`);
+                const data = await response.json();
+
+                if (data.status === 'success' && data.rankings && data.rankings.length > 0) {
+                    displayRankings(data.rankings);
+                    showingCount.textContent = data.rankings.length;
+                    totalCount.textContent = (data.total || data.rankings.length).toLocaleString();
+                    
+                    loadingIndicator.style.display = 'none';
+                    tableContainer.style.display = 'block';
+                    summaryInfo.classList.remove('d-none');
+                } else {
+                    showError(data.error || 'No rankings data available');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError(`Failed to load rankings: ${error.message}`);
+            }
+        }
+
+        function displayRankings(rankings) {
+            tableBody.innerHTML = '';
+            
+            rankings.forEach((planet, index) => {
+                const row = document.createElement('tr');
+                row.style.cursor = 'pointer';
+                row.classList.add('ranking-row');
+                
+                const name = planet.pl_name || planet.planet_name || `Exoplanet-${index + 1}`;
+                const score = getScore(planet);
+                const scoreFloat = parseFloat(score);
+                const habitClass = getClass(planet);
+                const radius = formatNumber(planet.radius, 2);
+                const mass = formatNumber(planet.mass, 2);
+                const temp = formatNumber(planet.surface_temp, 0);
+                const distance = formatNumber(planet.distance_from_star, 3);
+                const star = planet.star_type || getStarType(planet) || '-';
+                
+                const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : '';
+                const badgeClass = getBadgeClass(habitClass);
+                
+                // Score bar color based on score
+                let barGradient = 'linear-gradient(90deg, var(--accent-cyan) 0%, var(--accent-purple) 100%)';
+                if (scoreFloat >= 0.75) {
+                    barGradient = 'linear-gradient(90deg, #00ff88 0%, #00cc6a 100%)';
+                } else if (scoreFloat >= 0.5) {
+                    barGradient = 'linear-gradient(90deg, #9d4edd 0%, #c77dff 100%)';
+                } else if (scoreFloat >= 0.25) {
+                    barGradient = 'linear-gradient(90deg, #00f5ff 0%, #00b4d8 100%)';
+                } else {
+                    barGradient = 'linear-gradient(90deg, #ff6b35 0%, #ff3333 100%)';
+                }
+                
+                row.innerHTML = `
+                    <td style="text-align: center; vertical-align: middle;">
+                        <div class="rank-badge ${rankClass}">${index + 1}</div>
+                    </td>
+                    <td style="vertical-align: middle;">
+                        <div class="planet-name">
+                            <i class="fas fa-globe" style="color: var(--accent-cyan); margin-right: 8px;"></i>
+                            <span style="font-weight: 600;">${name}</span>
+                            ${index < 3 ? '<i class="fas fa-star star-icon ms-2"></i>' : ''}
+                        </div>
+                    </td>
+                    <td style="vertical-align: middle;">
+                        <div class="score-bar-container">
+                            <div class="score-bar-fill" style="width: ${Math.min(scoreFloat * 100, 100)}%; background: ${barGradient};"></div>
+                            <div class="score-bar-text">${score}</div>
+                        </div>
+                    </td>
+                    <td style="text-align: center; vertical-align: middle;">
+                        <span class="badge badge-habit ${badgeClass}">${habitClass}</span>
+                    </td>
+                    <td style="text-align: center; vertical-align: middle; font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 500;">${radius}</td>
+                    <td style="text-align: center; vertical-align: middle; font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 500;">${mass}</td>
+                    <td style="text-align: center; vertical-align: middle; font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 500;">${temp}</td>
+                    <td style="text-align: center; vertical-align: middle; font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 500;">${distance}</td>
+                    <td style="text-align: center; vertical-align: middle;">
+                        <span class="star-type-badge star-${star.toUpperCase()}">${star}</span>
+                    </td>
+                `;
+                
+                // Add click handler to show details
+                row.addEventListener('click', () => showPlanetDetails(planet, index + 1));
+                
+                tableBody.appendChild(row);
+            });
+        }
+        
+        function getStarType(planet) {
+            // Check for star_type_ columns
+            const types = ['O', 'B', 'A', 'F', 'G', 'K', 'M'];
+            for (const t of types) {
+                if (planet[`star_type_${t}`] === 1 || planet[`star_type_${t}`] === true) {
+                    return t;
+                }
+            }
+            return null;
+        }
+        
+        function showPlanetDetails(planet, rank) {
+            const name = planet.pl_name || planet.planet_name || `Exoplanet-${rank}`;
+            const score = getScore(planet);
+            const habitClass = getClass(planet);
+            
+            // Create modal content
+            const details = `
+                <div class="text-center mb-4">
+                    <div class="rank-badge ${rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : ''}" style="width: 60px; height: 60px; font-size: 1.5rem; margin: 0 auto 15px;">
+                        ${rank}
+                    </div>
+                    <h4 style="font-family: 'Inter', sans-serif; font-weight: 600; color: var(--accent-cyan);">${name}</h4>
+                    <span class="badge badge-habit ${getBadgeClass(habitClass)}" style="font-size: 1rem;">${habitClass}</span>
+                </div>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="detail-item">
+                            <i class="fas fa-star me-2" style="color: #d4a574;"></i>
+                            <strong>Score:</strong> ${score}
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="detail-item">
+                            <i class="fas fa-circle me-2" style="color: #7eb8da;"></i>
+                            <strong>Radius:</strong> ${formatNumber(planet.radius, 2)} R⊕
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="detail-item">
+                            <i class="fas fa-weight-hanging me-2" style="color: #a8a4ce;"></i>
+                            <strong>Mass:</strong> ${formatNumber(planet.mass, 2)} M⊕
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="detail-item">
+                            <i class="fas fa-thermometer-half me-2" style="color: #e8927c;"></i>
+                            <strong>Temp:</strong> ${formatNumber(planet.surface_temp, 0)} K
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="detail-item">
+                            <i class="fas fa-ruler me-2" style="color: #82b89a;"></i>
+                            <strong>Distance:</strong> ${formatNumber(planet.distance_from_star, 3)} AU
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="detail-item">
+                            <i class="fas fa-cube me-2" style="color: #8bb8c4;"></i>
+                            <strong>Density:</strong> ${formatNumber(planet.density, 2)} g/cm³
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="detail-item">
+                            <i class="fas fa-clock me-2" style="color: #c9a8a0;"></i>
+                            <strong>Period:</strong> ${formatNumber(planet.orbital_period, 1)} days
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="detail-item">
+                            <i class="fas fa-sun me-2" style="color: #e5c77d;"></i>
+                            <strong>Star Type:</strong> ${planet.star_type || getStarType(planet) || '-'}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Show in a modal
+            if (!document.getElementById('planetModal')) {
+                const modalHtml = `
+                    <div class="modal fade" id="planetModal" tabindex="-1">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content" style="background: var(--card-bg); border: 1px solid var(--current-border); backdrop-filter: blur(10px);">
+                                <div class="modal-header" style="border-color: var(--current-border);">
+                                    <h5 class="modal-title" style="font-family: 'Inter', sans-serif; font-weight: 600; color: var(--accent-cyan);">
+                                        <i class="fas fa-info-circle me-2"></i>Exoplanet Details
+                                    </h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body" id="planetModalBody"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+            }
+            
+            document.getElementById('planetModalBody').innerHTML = details;
+            const modal = new bootstrap.Modal(document.getElementById('planetModal'));
+            modal.show();
+        }
+
+        function getScore(planet) {
+            const score = planet.predicted_score || planet.habitability_score || planet.combined_habitability_score || 0;
+            return parseFloat(score).toFixed(3);
+        }
+
+        function getClass(planet) {
+            let cls = planet.predicted_class || planet.habitability_class || 'Unknown';
+            if (typeof cls === 'number') {
+                const map = {0: 'Non-Habitable', 1: 'Low', 2: 'Medium', 3: 'High'};
+                cls = map[cls] || `Class ${cls}`;
+            }
+            return cls;
+        }
+
+        function formatNumber(val, decimals) {
+            if (val === null || val === undefined || isNaN(val)) return '-';
+            return parseFloat(val).toFixed(decimals);
+        }
+
+        function getBadgeClass(habitClass) {
+            const lower = String(habitClass).toLowerCase();
+            if (lower.includes('high')) return 'badge-high';
+            if (lower.includes('medium')) return 'badge-medium';
+            if (lower.includes('low')) return 'badge-low';
+            return 'badge-none';
+        }
+
+        function showError(message) {
+            loadingIndicator.style.display = 'none';
+            tableContainer.style.display = 'none';
+            errorMessage.textContent = message;
+            errorMessage.classList.remove('d-none');
+        }
+
+        function exportPDF() {
+            const topN = parseInt(topNSelect.value);
+            btnExportPDF.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btnExportPDF.disabled = true;
+            
+            window.location.href = `/api/export/pdf?top=${topN}`;
+            
+            setTimeout(() => {
+                btnExportPDF.innerHTML = '<i class="fas fa-file-pdf"></i> PDF';
+                btnExportPDF.disabled = false;
+            }, 2000);
+        }
+
+        function exportExcel() {
+            const topN = parseInt(topNSelect.value);
+            btnExportExcel.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btnExportExcel.disabled = true;
+            
+            window.location.href = `/api/export/excel?top=${topN}`;
+            
+            setTimeout(() => {
+                btnExportExcel.innerHTML = '<i class="fas fa-file-excel"></i> Excel';
+                btnExportExcel.disabled = false;
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
+

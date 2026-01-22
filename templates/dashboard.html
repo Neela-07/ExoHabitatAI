@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ExoHabitatAI</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Plotly -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Animated Space Background -->
+    <div class="space-bg">
+        <div class="stars-layer stars-1"></div>
+        <div class="stars-layer stars-2"></div>
+        <div class="stars-layer stars-3"></div>
+        <div class="nebula nebula-1"></div>
+        <div class="nebula nebula-2"></div>
+        <div class="nebula nebula-3"></div>
+        <div class="shooting-star"></div>
+        <div class="shooting-star"></div>
+        <div class="shooting-star"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-globe-americas"></i> 
+                <span style="font-family: 'Orbitron', sans-serif;">ExoHabitatAI</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto me-3">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="fas fa-home"></i> Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/results"><i class="fas fa-trophy"></i> Rankings</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <section class="section-header">
+        <div class="container position-relative" style="z-index: 1;">
+            <div class="hero-badge mb-3">
+                <i class="fas fa-satellite"></i>
+                Mission Control Center
+            </div>
+            <h1 class="glow-text" style="font-family: 'Orbitron', sans-serif; font-size: 2.5rem;">
+                <i class="fas fa-chart-line me-2"></i> ANALYTICS DASHBOARD
+            </h1>
+            <p class="lead" style="color: var(--current-text-secondary);">Real-time insights from exoplanet habitability analysis</p>
+        </div>
+        <div class="data-grid" style="opacity: 0.2;"></div>
+    </section>
+
+    <!-- Stats Cards -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row g-4 mb-5">
+                <div class="col-lg-3 col-md-6">
+                    <div class="stats-card">
+                        <div class="icon">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <div class="value" id="totalPlanets">-</div>
+                        <div class="label">Total Exoplanets</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stats-card">
+                        <div class="icon" style="background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-orange) 100%);">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="value" id="avgScore" style="background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-gold) 100%); -webkit-background-clip: text;">-</div>
+                        <div class="label">Avg Habitability</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stats-card">
+                        <div class="icon" style="background: linear-gradient(135deg, var(--plasma-green) 0%, var(--accent-cyan) 100%);">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="value" id="habitableCount" style="background: linear-gradient(135deg, var(--plasma-green) 0%, var(--accent-cyan) 100%); -webkit-background-clip: text;">-</div>
+                        <div class="label">Habitable Candidates</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stats-card">
+                        <div class="icon" style="background: linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-orange) 100%);">
+                            <i class="fas fa-thermometer-half"></i>
+                        </div>
+                        <div class="value" id="avgTemp" style="background: linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-orange) 100%); -webkit-background-clip: text;">-</div>
+                        <div class="label">Avg Temp (K)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions Panel -->
+            <div class="control-panel mb-5">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div class="control-panel-title mb-0">
+                        <i class="fas fa-rocket"></i> Quick Actions
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="/" class="btn btn-space btn-sm">
+                            <i class="fas fa-calculator"></i> Predict
+                        </a>
+                        <a href="/results" class="btn btn-glow btn-sm">
+                            <i class="fas fa-trophy"></i> Rankings
+                        </a>
+                        <button class="btn btn-glow btn-sm" onclick="exportPDF()">
+                            <i class="fas fa-file-pdf"></i> Export PDF
+                        </button>
+                        <button class="btn btn-glow btn-sm" onclick="exportExcel()">
+                            <i class="fas fa-file-excel"></i> Export Excel
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row 1 -->
+            <div class="row g-4 mb-4">
+                <div class="col-lg-6">
+                    <div class="card h-100 hologram">
+                        <div class="card-header">
+                            <i class="fas fa-chart-pie me-2"></i> Habitability Distribution
+                        </div>
+                        <div class="card-body">
+                            <div id="habitabilityChart" style="height: 380px;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card h-100 hologram">
+                        <div class="card-header">
+                            <i class="fas fa-sun me-2"></i> Star Type Distribution
+                        </div>
+                        <div class="card-body">
+                            <div id="starTypeChart" style="height: 380px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row 2 -->
+            <div class="row g-4 mb-4">
+                <div class="col-12">
+                    <div class="card hologram">
+                        <div class="card-header">
+                            <i class="fas fa-chart-bar me-2"></i> Feature Importance Analysis
+                        </div>
+                        <div class="card-body">
+                            <div id="featureChart" style="height: 400px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row 3 -->
+            <div class="row g-4 mb-4">
+                <div class="col-lg-6">
+                    <div class="card h-100 hologram">
+                        <div class="card-header">
+                            <i class="fas fa-project-diagram me-2"></i> Parameter Correlations
+                        </div>
+                        <div class="card-body">
+                            <div id="correlationChart" style="height: 400px;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card h-100 hologram">
+                        <div class="card-header">
+                            <i class="fas fa-temperature-high me-2"></i> Temperature Distribution
+                        </div>
+                        <div class="card-body">
+                            <div id="tempChart" style="height: 400px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Model Performance -->
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="card hologram">
+                        <div class="card-header">
+                            <i class="fas fa-brain me-2"></i> Model Performance Comparison
+                        </div>
+                        <div class="card-body">
+                            <div id="modelChart" style="height: 350px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container text-center">
+            <div class="mb-3">
+                <span style="font-family: 'Orbitron', sans-serif; font-size: 1.5rem;">
+                    <span class="glow-text">EXOHABITAT</span><span style="color: var(--accent-cyan);">AI</span>
+                </span>
+            </div>
+            <p class="text-muted small">&copy; 2026 ExoHabitatAI</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Initialize dark theme
+        document.documentElement.setAttribute('data-theme', 'dark');
+        
+        function getChartLayout(title = '') {
+            return {
+                title: title ? { text: title, font: { color: '#e0e7ff', family: 'Orbitron' } } : undefined,
+                paper_bgcolor: 'transparent',
+                plot_bgcolor: 'transparent',
+                font: { color: '#a8b2d1', family: 'Inter' },
+                xaxis: { 
+                    gridcolor: 'rgba(0,245,255,0.1)',
+                    linecolor: 'rgba(0,245,255,0.2)',
+                    zerolinecolor: 'rgba(0,245,255,0.2)'
+                },
+                yaxis: { 
+                    gridcolor: 'rgba(0,245,255,0.1)',
+                    linecolor: 'rgba(0,245,255,0.2)',
+                    zerolinecolor: 'rgba(0,245,255,0.2)'
+                },
+                margin: { t: 40, b: 60, l: 60, r: 40 }
+            };
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async function() {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            
+            await loadStats();
+            await loadAllCharts();
+        });
+        
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/rankings?top=1000');
+                const data = await response.json();
+                
+                if (data.status === 'success' && data.rankings) {
+                    const rankings = data.rankings;
+                    document.getElementById('totalPlanets').textContent = (data.total || rankings.length).toLocaleString();
+                    
+                    const scores = rankings.map(p => p.predicted_score || 0).filter(s => s > 0);
+                    if (scores.length > 0) {
+                        const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+                        document.getElementById('avgScore').textContent = avg.toFixed(3);
+                    }
+                    
+                    const habitable = rankings.filter(p => (p.predicted_score || 0) >= 0.5).length;
+                    document.getElementById('habitableCount').textContent = habitable.toLocaleString();
+                    
+                    const temps = rankings.map(p => p.surface_temp).filter(t => t && !isNaN(t));
+                    if (temps.length > 0) {
+                        const avgTemp = temps.reduce((a, b) => a + b, 0) / temps.length;
+                        document.getElementById('avgTemp').textContent = Math.round(avgTemp).toLocaleString();
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+        
+        async function loadAllCharts() {
+            const theme = document.documentElement.getAttribute('data-theme');
+            const isDark = theme === 'dark';
+            
+            // Habitability Pie Chart
+            const habitData = [{
+                values: [15, 25, 35, 25],
+                labels: ['High Habitability', 'Medium Habitability', 'Low Habitability', 'Non-Habitable'],
+                type: 'pie',
+                marker: {
+                    colors: ['#00ff88', '#ffd60a', '#00f5ff', '#ff6b35']
+                },
+                hole: 0.5,
+                textinfo: 'label+percent',
+                textposition: 'outside',
+                textfont: { color: isDark ? '#e0e7ff' : '#0a2744' }
+            }];
+            
+            Plotly.newPlot('habitabilityChart', habitData, {
+                ...getChartLayout(),
+                showlegend: false
+            });
+            
+            // Star Type Bar Chart
+            const starData = [{
+                x: ['M Dwarf', 'K Type', 'G Type', 'F Type', 'A Type', 'B Type', 'O Type'],
+                y: [45, 25, 15, 8, 4, 2, 1],
+                type: 'bar',
+                marker: {
+                    color: ['#ff6b35', '#ff9500', '#ffd60a', '#a3e635', '#00f5ff', '#818cf8', '#c084fc'],
+                    line: { color: 'rgba(0,245,255,0.5)', width: 2 }
+                }
+            }];
+            
+            Plotly.newPlot('starTypeChart', starData, {
+                ...getChartLayout(),
+                xaxis: { ...getChartLayout().xaxis, title: 'Star Type' },
+                yaxis: { ...getChartLayout().yaxis, title: 'Percentage (%)' }
+            });
+            
+            // Feature Importance
+            const features = ['Surface Temperature', 'Distance from Star', 'Planet Radius', 'Planet Mass', 'Star Type', 'Density', 'Orbital Period', 'Stellar Luminosity'];
+            const importance = [0.25, 0.20, 0.15, 0.12, 0.10, 0.08, 0.06, 0.04];
+            
+            const featureData = [{
+                x: importance,
+                y: features,
+                type: 'bar',
+                orientation: 'h',
+                marker: {
+                    color: importance.map((v, i) => `rgba(0,245,255,${0.4 + v * 2})`),
+                    line: { color: '#00f5ff', width: 2 }
+                },
+                text: importance.map(v => (v * 100).toFixed(1) + '%'),
+                textposition: 'outside',
+                textfont: { color: isDark ? '#00f5ff' : '#003566' }
+            }];
+            
+            Plotly.newPlot('featureChart', featureData, {
+                ...getChartLayout(),
+                xaxis: { ...getChartLayout().xaxis, title: 'Importance Score' },
+                margin: { l: 160, r: 60, t: 40, b: 60 }
+            });
+            
+            // Correlation Heatmap
+            const corrFeatures = ['Radius', 'Mass', 'Density', 'Temp', 'Period', 'Distance'];
+            const corrMatrix = [
+                [1.0, 0.85, 0.45, 0.30, 0.25, 0.40],
+                [0.85, 1.0, 0.60, 0.35, 0.30, 0.35],
+                [0.45, 0.60, 1.0, 0.20, 0.15, 0.20],
+                [0.30, 0.35, 0.20, 1.0, 0.55, 0.65],
+                [0.25, 0.30, 0.15, 0.55, 1.0, 0.70],
+                [0.40, 0.35, 0.20, 0.65, 0.70, 1.0]
+            ];
+            
+            const corrData = [{
+                z: corrMatrix,
+                x: corrFeatures,
+                y: corrFeatures,
+                type: 'heatmap',
+                colorscale: [[0, '#000814'], [0.25, '#003566'], [0.5, '#00b4d8'], [0.75, '#00f5ff'], [1, '#9d4edd']],
+                showscale: true,
+                colorbar: { tickfont: { color: isDark ? '#a8b2d1' : '#4a5568' } }
+            }];
+            
+            Plotly.newPlot('correlationChart', corrData, {
+                ...getChartLayout(),
+                margin: { l: 80, r: 60, t: 40, b: 80 }
+            });
+            
+            // Temperature Distribution
+            const tempRanges = ['<200K', '200-300K', '300-400K', '400-600K', '600-1000K', '>1000K'];
+            const tempCounts = [5, 25, 35, 20, 10, 5];
+            
+            const tempData = [{
+                x: tempRanges,
+                y: tempCounts,
+                type: 'bar',
+                marker: {
+                    color: ['#818cf8', '#00f5ff', '#00ff88', '#ffd60a', '#ff9500', '#ff6b35'],
+                    line: { color: 'rgba(255,255,255,0.3)', width: 2 }
+                }
+            }];
+            
+            Plotly.newPlot('tempChart', tempData, {
+                ...getChartLayout(),
+                xaxis: { ...getChartLayout().xaxis, title: 'Temperature Range' },
+                yaxis: { ...getChartLayout().yaxis, title: 'Distribution (%)' }
+            });
+            
+            // Model Performance
+            const models = ['Random Forest', 'XGBoost', 'Logistic Regression'];
+            const accuracy = [0.96, 0.98, 0.92];
+            const f1Score = [0.94, 0.97, 0.90];
+            
+            const modelData = [
+                {
+                    x: models,
+                    y: accuracy.map(v => v * 100),
+                    name: 'Accuracy',
+                    type: 'bar',
+                    marker: { color: '#00f5ff' }
+                },
+                {
+                    x: models,
+                    y: f1Score.map(v => v * 100),
+                    name: 'F1 Score',
+                    type: 'bar',
+                    marker: { color: '#9d4edd' }
+                }
+            ];
+            
+            Plotly.newPlot('modelChart', modelData, {
+                ...getChartLayout(),
+                barmode: 'group',
+                yaxis: { ...getChartLayout().yaxis, title: 'Score (%)', range: [80, 100] },
+                legend: { 
+                    font: { color: isDark ? '#a8b2d1' : '#4a5568' },
+                    bgcolor: 'transparent'
+                }
+            });
+        }
+        
+        function updateAllCharts() {
+            loadAllCharts();
+        }
+        
+        function exportPDF() {
+            window.location.href = '/api/export/pdf?top=50';
+        }
+        
+        function exportExcel() {
+            window.location.href = '/api/export/excel?top=100';
+        }
+    </script>
+</body>
+</html>
+

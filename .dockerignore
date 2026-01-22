@@ -1,0 +1,47 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv
+env
+.venv
+ENV
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.pytest_cache
+.coverage
+htmlcov
+
+# Documentation (keep in container for production)
+# docs/
+
+# Logs
+*.log
+
+# Local development files
+.env.local
+.env.development
+
+# Jupyter
+.ipynb_checkpoints
+
+# Temporary files
+tmp/
+temp/
