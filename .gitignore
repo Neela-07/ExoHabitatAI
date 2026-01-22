@@ -38,12 +38,12 @@ instance/
 *~
 
 # Data files (keep structure but ignore large files)
-# Uncomment below lines if you want to exclude data from git
-# data/raw/*.csv
-# data/processed/*.csv
+# These files are too large for GitHub (>100MB)
+data/*.csv
+data/raw/*.csv
+data/processed/*.csv
 !data/raw/.gitkeep
 !data/processed/.gitkeep
-!data/exoplanets_full.csv
 
 # Model files (keep for deployment)
 # Uncomment if you want to regenerate models
