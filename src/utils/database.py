@@ -85,14 +85,25 @@ class DatabaseManager:
             file_path = self.db_config["csv"]["raw_file"]
         elif source == "processed":
             file_path = self.db_config["csv"]["processed_file"]
+        elif source == "sample":
+            file_path = self.db_config["csv"].get("sample_file", "")
         else:
-            raise ValueError("source must be 'raw' or 'processed'")
+            raise ValueError("source must be 'raw', 'processed', or 'sample'")
         
         try:
             df = pd.read_csv(file_path, low_memory=False)
             print(f"Loaded {len(df)} records from {file_path}")
             return df
         except FileNotFoundError:
+            # Try sample file as fallback
+            sample_path = self.db_config["csv"].get("sample_file", "")
+            if sample_path and source != "sample":
+                try:
+                    df = pd.read_csv(sample_path, low_memory=False)
+                    print(f"Loaded {len(df)} records from {sample_path}")
+                    return df
+                except:
+                    pass
             print(f"File not found: {file_path}")
             print("Generating sample data...")
             return self._generate_sample_data()

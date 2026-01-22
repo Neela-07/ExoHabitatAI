@@ -68,7 +68,8 @@ DATABASE_CONFIG = {
     },
     "csv": {
         "raw_file": str(RAW_DATA_DIR / "exoplanets_raw.csv"),
-        "processed_file": str(PROCESSED_DATA_DIR / "exoplanets_processed.csv")
+        "processed_file": str(PROCESSED_DATA_DIR / "exoplanets_processed.csv"),
+        "sample_file": str(DATA_DIR / "exoplanets_sample.csv")
     }
 }
 

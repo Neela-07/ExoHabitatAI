@@ -39,9 +39,11 @@ instance/
 
 # Data files (keep structure but ignore large files)
 # These files are too large for GitHub (>100MB)
-data/*.csv
+data/exoplanets_full.csv
 data/raw/*.csv
 data/processed/*.csv
+# Keep sample file for deployment
+!data/exoplanets_sample.csv
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 
