@@ -75,6 +75,12 @@ class DatabaseManager:
         if self.db_type == "postgresql":
             return self._load_from_postgresql(source)
         else:
+            # Try sample file first, then processed
+            sample_path = self.db_config["csv"].get("sample_file", "")
+            if sample_path:
+                from pathlib import Path
+                if Path(sample_path).exists():
+                    return self._load_from_csv("sample")
             return self._load_from_csv(source)
     
     def _load_from_csv(self, source):
