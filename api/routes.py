@@ -63,6 +63,22 @@ def load_scaler():
     except Exception as e:
         return None, str(e)
 
+def load_feature_columns():
+    """
+    Load saved feature column names
+    """
+    try:
+        features_path = MODELS_DIR / "feature_columns.pkl"
+        if not features_path.exists():
+            return None, "Feature columns file not found"
+        
+        with open(features_path, 'rb') as f:
+            feature_columns = pickle.load(f)
+        
+        return feature_columns, None
+    except Exception as e:
+        return None, str(e)
+
 def load_label_encoder():
     """
     Load label encoder (if available)
@@ -135,20 +151,24 @@ def calculate_habitability_score(input_data):
 def prepare_features(input_data):
     """
     Prepare features from input data for prediction
-    Note: Model was trained on 'density' feature only
+    Uses saved feature columns from training
     """
-    # Load scaler to get actual feature names the model expects
-    scaler, error = load_scaler()
-    if error or scaler is None:
-        # Fallback to default if scaler not available
-        expected_features = ['density']
-    else:
-        # Get feature names from the trained scaler
-        if hasattr(scaler, 'feature_names_in_'):
-            expected_features = list(scaler.feature_names_in_)
-        else:
-            # Fallback if feature names not available
+    # Try to load saved feature columns first
+    expected_features, error = load_feature_columns()
+    
+    if error or expected_features is None:
+        # Fallback: try to get from scaler
+        scaler, error = load_scaler()
+        if error or scaler is None:
+            # Fallback to default if scaler not available
             expected_features = ['density']
+        else:
+            # Get feature names from the trained scaler
+            if hasattr(scaler, 'feature_names_in_'):
+                expected_features = list(scaler.feature_names_in_)
+            else:
+                # Fallback if feature names not available
+                expected_features = ['density']
     
     # Create feature vector with expected features initialized to default values
     features = {col: 1.99 for col in expected_features}  # Use median density as default
