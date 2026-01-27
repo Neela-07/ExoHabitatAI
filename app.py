@@ -2,6 +2,11 @@
 Main Flask Application for ExoHabitatAI
 Supports deployment on Heroku, Render, and local development
 """
+if _name_ == "_main_":
+    import os
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)
+    
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from flask_cors import CORS
 import sys
